@@ -6,13 +6,13 @@
   "description": "Checksum-tracked SQL migrations for MySQL/MariaDB with a dev-first lifecycle: migrations start unnumbered as dev_<slug>/ and are sealed to NNN_<slug>/ right before merge, so parallel branches never collide on numbers.",
   "author": "Stanislav Janů",
   "license": "MIT",
-  "homepage": "https://github.com/stanleyjanu/sealed-migrations#readme",
+  "homepage": "https://github.com/janu-software/sealed-migrations#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stanleyjanu/sealed-migrations.git"
+    "url": "git+https://github.com/janu-software/sealed-migrations.git"
   },
   "bugs": {
-    "url": "https://github.com/stanleyjanu/sealed-migrations/issues"
+    "url": "https://github.com/janu-software/sealed-migrations/issues"
   },
   "keywords": [
     "migrations",
