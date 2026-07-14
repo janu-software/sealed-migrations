@@ -1,7 +1,7 @@
 {
   "name": "sealed-migrations",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packageManager": "pnpm@10.7.0",
   "description": "Checksum-tracked SQL migrations for MySQL/MariaDB with a dev-first lifecycle: migrations start unnumbered as dev_<slug>/ and are sealed to NNN_<slug>/ right before merge, so parallel branches never collide on numbers.",
   "author": "Stanislav Janů",
