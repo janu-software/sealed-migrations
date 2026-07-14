@@ -1,28 +1,39 @@
 name: Release
 
-# Publishes to npm when a v* tag is pushed. Requires an NPM_TOKEN repository
-# secret. Uses npm provenance, so the workflow needs id-token: write.
+# Publishes to npm when a v* tag is pushed, using npm Trusted Publishing (OIDC).
+# No NPM_TOKEN secret: the `id-token: write` permission lets the job mint a
+# short-lived OIDC token, and npm generates provenance automatically.
+#
+# One-time setup on npmjs.com: package -> Settings -> Trusted Publisher ->
+# GitHub Actions, org "janu-software", repo "sealed-migrations", workflow
+# "release.yml". Trusted publishing can only be configured after the package's
+# first publish exists.
 on:
   push:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
+          node-version: 24
           registry-url: https://registry.npmjs.org
+          cache: pnpm
+      # Trusted publishing needs npm CLI >= 11.5.1; ensure it regardless of the
+      # version bundled with Node.
+      - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
-      - run: pnpm publish --no-git-checks --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # `npm publish` (not `pnpm publish`) detects the OIDC environment and
+      # publishes token-less with automatic provenance. pnpm's OIDC support is
+      # still unreliable across versions.
+      - run: npm publish
