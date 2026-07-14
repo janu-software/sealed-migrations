@@ -1,0 +1,71 @@
+{
+  "name": "sealed-migrations",
+  "type": "module",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.7.0",
+  "description": "Checksum-tracked SQL migrations for MySQL/MariaDB with a dev-first lifecycle: migrations start unnumbered as dev_<slug>/ and are sealed to NNN_<slug>/ right before merge, so parallel branches never collide on numbers.",
+  "author": "Stanislav Janů",
+  "license": "MIT",
+  "homepage": "https://github.com/stanleyjanu/sealed-migrations#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stanleyjanu/sealed-migrations.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stanleyjanu/sealed-migrations/issues"
+  },
+  "keywords": [
+    "migrations",
+    "sql",
+    "mysql",
+    "mariadb",
+    "database",
+    "schema",
+    "migration-runner",
+    "checksum",
+    "dev-migrations"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "release": "bumpp",
+    "prepublishOnly": "pnpm build"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.6.0",
+    "@types/node": "^22.10.0",
+    "bumpp": "^10.0.0",
+    "eslint": "^9.17.0",
+    "mysql2": "^3.22.6",
+    "tsdown": "^0.15.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
