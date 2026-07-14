@@ -59,7 +59,8 @@ MariaDB-on-a-cluster project (both hooks supplied).
 3. **Leave the glue unchanged:** the `new-migration.sh` scaffolder, the
    `check-dev-migrations.sh` branch guard, the CI guard job, the pre-commit hook, the
    migration docs, and the `package.json` `migrate:*` aliases. The package does not
-   scaffold or gate branches; those stay in your repo.
+   scaffold or gate branches; those stay in your repo. (Missing any of them?
+   [SETUP.md](./SETUP.md) has copy-paste versions.)
 4. **Dockerfile:** make sure the runtime / migrate image ships
    `node_modules/sealed-migrations` (the package has zero runtime deps but must be
    present, alongside `mysql2` / `dotenv`). Adjust the `COPY` lines if the image

@@ -58,7 +58,7 @@ await runner.seal('add_timezone')
 await runner.runCli(process.argv.slice(2))
 ```
 
-Already have a project with its own vendored migration script? See [MIGRATING.md](./MIGRATING.md) for a behaviour-preserving, copy-pasteable migration brief.
+Setting up in a new project? [SETUP.md](./SETUP.md) is the full first-time recipe (wrapper, scaffolder, baseline, branch guard, CI, deploy). Already have a vendored migration script? [MIGRATING.md](./MIGRATING.md) is a behaviour-preserving swap.
 
 ## Migration files
 
