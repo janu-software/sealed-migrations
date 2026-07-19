@@ -49,6 +49,36 @@ export function computeNextSealNumber(migrations: Migration[], appliedVersions: 
   return String(max + 1).padStart(3, '0')
 }
 
+/**
+ * Resolves a `--to` value against the known migrations: an exact match, the
+ * `none` sentinel, and an empty string pass through unchanged; a unique
+ * version prefix (e.g. `025`) resolves to its full version name; an
+ * ambiguous prefix throws listing the candidates; a value matching nothing
+ * passes through so the caller's existing not-found error fires.
+ */
+export function resolveTargetVersion(migrations: Migration[], raw: string): string {
+  const trimmed = raw.trim()
+  if (!trimmed || trimmed === 'none') {
+    return trimmed
+  }
+
+  if (migrations.some(migration => migration.version === trimmed)) {
+    return trimmed
+  }
+
+  const matches = migrations.filter(migration => migration.version.startsWith(trimmed))
+  if (matches.length === 1) {
+    return matches[0]!.version
+  }
+
+  if (matches.length > 1) {
+    const list = matches.map(migration => migration.version).join(', ')
+    throw new Error(`Ambiguous target version prefix ${trimmed}: matches ${list}`)
+  }
+
+  return trimmed
+}
+
 export async function commandCurrent(conn: MigrationConnection, migrations: Migration[], logger: Logger): Promise<void> {
   const applied = await getAppliedMigrations(conn)
   validateAppliedState(migrations, applied, {}, logger)
@@ -91,7 +121,7 @@ export async function commandUp(
     throw new Error(`Baseline migration must be the first migration (${baselineVersion})`)
   }
 
-  const targetVersion = (options.to ?? '').trim()
+  const targetVersion = resolveTargetVersion(migrations, options.to ?? '')
   const targetIndex = targetVersion
     ? migrations.findIndex(migration => migration.version === targetVersion)
     : migrations.length - 1
@@ -138,7 +168,7 @@ export async function commandDown(
   options: DownOptions,
   logger: Logger,
 ): Promise<void> {
-  const targetVersion = (options.to ?? '').trim()
+  const targetVersion = resolveTargetVersion(migrations, options.to ?? '')
   if (!targetVersion) {
     throw new Error('Rollback requires a target version (to / --to=<version>)')
   }

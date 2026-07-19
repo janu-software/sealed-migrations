@@ -106,6 +106,8 @@ Then fill in `up.sql` / `down.sql`, `up` to apply, and `seal ${slug}` right befo
 | `current()` | `current` | Print the highest applied version |
 | `status()` | `status` | List all migrations; foreign dev rows show as `FOREIGN` |
 
+`--to` accepts a unique prefix of a version (e.g. `--to=025` resolves to `025_order_confirmation_reminder`); an ambiguous prefix errors listing the candidates.
+
 ## Iterating on a dev migration
 
 One feature keeps one migration. Two equivalent loops:

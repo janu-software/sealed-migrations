@@ -7,6 +7,7 @@ export {
   commandStatus,
   commandUp,
   computeNextSealNumber,
+  resolveTargetVersion,
 } from './commands'
 
 export {

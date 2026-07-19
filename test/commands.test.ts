@@ -10,6 +10,7 @@ import {
   commandSeal,
   hashMigration,
   readMigrations,
+  resolveTargetVersion,
 } from '../src'
 
 // A test fake cannot satisfy the generic MigrationConnection query/execute
@@ -256,5 +257,76 @@ describe('commandDown dev checksum tolerance', () => {
     ])
 
     await expect(commandDown(conn, migrations, { to: '001_baseline' }, console)).rejects.toThrow(/Checksum mismatch for migration 002_numbered/)
+  })
+})
+
+describe('resolveTargetVersion', () => {
+  const migrations = [
+    { version: '001_baseline' },
+    { version: '025_order_confirmation_reminder' },
+    { version: '026_other' },
+    { version: '026b_conflict' },
+    { version: 'dev_focal' },
+  ] as Migration[]
+
+  it('returns an exact match untouched', () => {
+    expect(resolveTargetVersion(migrations, '025_order_confirmation_reminder'))
+      .toBe('025_order_confirmation_reminder')
+  })
+
+  it('resolves a unique prefix to the full version', () => {
+    expect(resolveTargetVersion(migrations, '025')).toBe('025_order_confirmation_reminder')
+  })
+
+  it('throws on an ambiguous prefix listing the candidates', () => {
+    expect(() => resolveTargetVersion(migrations, '026'))
+      .toThrow(/Ambiguous target version prefix 026: matches 026_other, 026b_conflict/)
+  })
+
+  it('passes a non-matching value through for the caller to report', () => {
+    expect(resolveTargetVersion(migrations, '099')).toBe('099')
+  })
+
+  it('leaves the none sentinel and empty string untouched', () => {
+    expect(resolveTargetVersion(migrations, 'none')).toBe('none')
+    expect(resolveTargetVersion(migrations, '')).toBe('')
+  })
+})
+
+describe('commandDown prefix resolve', () => {
+  function downConn(appliedRows: Array<{ version: string, checksum: string, applied_at: string }>) {
+    const deletedVersions: unknown[][] = []
+    const conn = {
+      query: vi.fn(async (sql: string) => {
+        if (sql.includes('FROM schema_migrations')) {
+          return [appliedRows, []]
+        }
+        return [[], []]
+      }),
+      execute: vi.fn(async (sql: string, params: unknown[]) => {
+        if (sql.startsWith('DELETE')) {
+          deletedVersions.push(params)
+        }
+        return [{}, []]
+      }),
+      beginTransaction: vi.fn(async () => {}),
+      commit: vi.fn(async () => {}),
+      rollback: vi.fn(async () => {}),
+    }
+    return { conn: asConn(conn), deletedVersions }
+  }
+
+  it('rolls back via a unique numeric prefix', async () => {
+    await makeMigrationDir(tmpRoot, '001_baseline')
+    await makeMigrationDir(tmpRoot, '002_second')
+    const migrations = await readMigrations(tmpRoot)
+
+    const { conn, deletedVersions } = downConn([
+      { version: '001_baseline', checksum: migrations[0]!.checksum, applied_at: '2026-01-01' },
+      { version: '002_second', checksum: migrations[1]!.checksum, applied_at: '2026-01-02' },
+    ])
+
+    await expect(commandDown(conn, migrations, { to: '001' }, console)).resolves.toBeUndefined()
+    expect(deletedVersions).toEqual([['002_second']])
   })
 })
